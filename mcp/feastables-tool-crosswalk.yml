@@ -1,0 +1,139 @@
+generated: '2026-08-01'
+method: derived
+source: mcp/feastables-mcp.yml
+description: >-
+  Crosswalk of the Feastables agent-facing tool surface. Feastables publishes NO
+  OpenAPI, so tools cannot be bound to operationIds. What it does publish - in its
+  own /agents.md and /llms.txt - is an explicit list of read-only HTTP JSON
+  endpoints, and those are what the bindings below resolve to. Two MCP surfaces
+  coexist and are NOT identical: the anonymous Storefront MCP (5 tools, read +
+  cart) and the gated UCP Shopping MCP (13 methods, read + cart + checkout +
+  order). Every row is grounded in a probed tools/list response or in the OpenRPC
+  schema the store's own /.well-known/ucp points at.
+surfaces:
+  openapi:
+    present: false
+    note: >-
+      Probed /openapi.json, /openapi.yaml, /swagger.json, /api-docs on both
+      feastables.com and feastables.myshopify.com - all 404. No OpenAPI exists.
+  graphql:
+    present: false
+    note: >-
+      Shopify Storefront GraphQL exists at the platform level but requires a
+      merchant-issued Storefront access token; Feastables publishes none, so no
+      introspection was attempted and no schema is recorded.
+  http_json:
+    present: true
+    documented_at: https://feastables.com/agents.md
+    gated: false
+    endpoints:
+      - {method: GET, path: /products.json, status: 200, note: whole-store product catalog, 30 products at probe time}
+      - {method: GET, path: '/products/{handle}.json', status: documented}
+      - {method: GET, path: '/collections/{handle}/products.json', status: documented}
+      - {method: GET, path: '/collections/{handle}', status: documented}
+      - {method: GET, path: /collections/all, status: 200}
+      - {method: GET, path: '/search?q={query}&type=product', status: 200}
+      - {method: GET, path: /sitemap.xml, status: 200}
+  mcp_storefront:
+    present: true
+    url: https://feastables.com/api/mcp
+    gated: false
+    tools_list_status: 200
+  mcp_ucp_shopping:
+    present: true
+    url: https://feastables.com/api/ucp/mcp
+    gated: true
+    tools_list_status: 422
+    gate: UCP-Agent profile URI required
+crosswalk:
+  - tool: search_catalog
+    surface: mcp_storefront
+    category: catalog
+    rest: ['GET /search?q={query}&type=product', 'GET /collections/{handle}/products.json']
+    binding: http-json
+    confidence: medium
+    note: >-
+      Both the tool and the JSON endpoints return product results, but the tool
+      adds natural-language query, structured filters and cursor pagination that
+      the storefront JSON endpoints do not expose. Not a 1:1 projection.
+  - tool: get_product_details
+    surface: mcp_storefront
+    category: catalog
+    rest: ['GET /products/{handle}.json']
+    binding: http-json
+    confidence: medium
+    note: >-
+      Same entity, different key: the tool takes product_id plus option selection,
+      country and language; the JSON endpoint is keyed by URL handle and has no
+      localization parameters.
+  - tool: get_cart
+    surface: mcp_storefront
+    category: cart
+    rest: []
+    binding: none
+    confidence: high
+    note: No public read-only JSON endpoint exposes cart state.
+  - tool: update_cart
+    surface: mcp_storefront
+    category: cart
+    rest: []
+    binding: none
+    confidence: high
+    note: >-
+      Consolidated write - line items, buyer identity, delivery addresses, delivery
+      options, discount codes, gift cards, note. No documented HTTP JSON equivalent.
+  - tool: search_shop_policies_and_faqs
+    surface: mcp_storefront
+    category: content
+    rest: ['GET /policies/refund-policy', 'GET /policies/shipping-policy', 'GET /pages/faq', 'GET /pages/contact-us']
+    binding: html-page
+    confidence: low
+    note: >-
+      The tool answers policy/FAQ questions in natural language; the only public
+      equivalents are HTML pages, not a machine-readable endpoint.
+mcp_only:
+  - {tool: get_cart, surface: mcp_storefront, reason: cart state has no public JSON projection}
+  - {tool: update_cart, surface: mcp_storefront, reason: cart mutation has no public JSON projection}
+  - {tool: search_shop_policies_and_faqs, surface: mcp_storefront, reason: retrieval over policy/FAQ content, no structured endpoint}
+  - {tool: create_cart, surface: mcp_ucp_shopping, reason: UCP checkout lifecycle, gated}
+  - {tool: cancel_cart, surface: mcp_ucp_shopping, reason: UCP checkout lifecycle, gated}
+  - {tool: create_checkout, surface: mcp_ucp_shopping, reason: UCP checkout lifecycle, gated}
+  - {tool: get_checkout, surface: mcp_ucp_shopping, reason: UCP checkout lifecycle, gated}
+  - {tool: update_checkout, surface: mcp_ucp_shopping, reason: UCP checkout lifecycle, gated}
+  - {tool: complete_checkout, surface: mcp_ucp_shopping, reason: places the order, requires buyer approval, gated}
+  - {tool: cancel_checkout, surface: mcp_ucp_shopping, reason: UCP checkout lifecycle, gated}
+  - {tool: get_order, surface: mcp_ucp_shopping, reason: order retrieval, gated}
+  - {tool: lookup_catalog, surface: mcp_ucp_shopping, reason: batch identifier lookup, no storefront tool or JSON equivalent}
+rest_only:
+  - {endpoint: 'GET /products.json', reason: full-catalog dump, no tool bulk-exports the catalog}
+  - {endpoint: 'GET /sitemap.xml', reason: crawl surface, no tool equivalent}
+  - {endpoint: 'GET /sitemap_agentic_discovery.xml', reason: agent-discovery sitemap, no tool equivalent}
+divergence_notes:
+  - >-
+    The two MCP servers share four tool names (search_catalog, get_cart,
+    update_cart, and get_product_details vs get_product) but are different
+    services with different auth and different parameter shapes - the UCP methods
+    all take a required meta object carrying ucp-agent.profile and an optional
+    idempotency-key, which the Storefront MCP tools do not.
+  - >-
+    Checkout exists ONLY on the gated UCP surface. An anonymous agent can search,
+    inspect products and build a cart, but cannot transact without a UCP agent
+    profile, or without routing through the Shop skill the store recommends.
+coverage:
+  mcp_surfaces: 2
+  tools_named: 18
+  tools_named_storefront: 5
+  tools_named_ucp: 13
+  tools_bound_to_http_json: 3
+  tools_mcp_only: 12
+  http_json_endpoints_documented: 7
+  http_json_endpoints_with_a_tool: 4
+  openapi_operations: 0
+x-evidence:
+  fetched: '2026-08-01'
+  urls:
+    - https://feastables.com/api/mcp
+    - https://feastables.com/api/ucp/mcp
+    - https://feastables.com/.well-known/ucp
+    - https://feastables.com/agents.md
+    - https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json

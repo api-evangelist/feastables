@@ -1,0 +1,51 @@
+generated: '2026-08-01'
+method: probed
+source: well-known/feastables-openid-configuration.json
+docs: https://feastables.com/.well-known/openid-configuration
+description: >-
+  Feastables publishes no OpenAPI and no scopes reference page. These scopes come
+  from the scopes_supported array in the store's own OpenID Connect discovery
+  document, which is served from feastables.com and points at the Shopify hosted
+  authentication issuer for this shop.
+schemes:
+  - name: shopify-customer-account
+    source: well-known/feastables-openid-configuration.json
+    issuer: https://shopify.com/authentication/55160602784
+    flows:
+      - flow: authorizationCode
+        authorizationUrl: https://shopify.com/authentication/55160602784/oauth/authorize
+        tokenUrl: https://shopify.com/authentication/55160602784/oauth/token
+        code_challenge_methods: [S256]
+scopes:
+  - scope: openid
+    description: OpenID Connect authentication; issues an ID token for the customer.
+    flows: [authorizationCode]
+    sources: [well-known/feastables-openid-configuration.json]
+  - scope: email
+    description: Access to the customer's email address and email_verified claim.
+    flows: [authorizationCode]
+    sources: [well-known/feastables-openid-configuration.json]
+  - scope: customer-account-api:full
+    description: >-
+      Full access to the Shopify Customer Account API for the authenticated
+      customer - orders, addresses, profile and subscriptions on this store.
+    flows: [authorizationCode]
+    sources: [well-known/feastables-openid-configuration.json]
+  - scope: customer-account-mcp-api:full
+    description: >-
+      Full access to the customer-account MCP surface for the authenticated
+      customer. This scope is the only published evidence of an authenticated
+      customer-account MCP server behind the Shopify authentication issuer.
+    flows: [authorizationCode]
+    sources: [well-known/feastables-openid-configuration.json]
+notes:
+  - >-
+    The UCP Shopping MCP server does not use OAuth scopes - it gates on a
+    UCP-Agent profile URI instead. See authentication/feastables-authentication.yml.
+  - >-
+    Scope descriptions are written from the scope names and the Shopify
+    customer-account model; Feastables publishes no per-scope documentation.
+x-evidence:
+  fetched: '2026-08-01'
+  url: https://feastables.com/.well-known/openid-configuration
+  http_status: 200

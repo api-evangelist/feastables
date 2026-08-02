@@ -1,0 +1,59 @@
+generated: '2026-08-01'
+method: probed
+source: well-known/feastables-ucp.json
+description: >-
+  Versioning and lifecycle posture of the Feastables agentic-commerce surface.
+  Feastables versions nothing itself - it inherits dated protocol versions from UCP
+  and MCP, which it negotiates through its own /.well-known/ucp document and the
+  JSON-RPC initialize handshake.
+versioning:
+  - surface: UCP Shopping (https://feastables.com/api/ucp/mcp)
+    scheme: dated
+    current: '2026-04-08'
+    supported: ['2026-04-08', '2026-01-23']
+    negotiation: /.well-known/ucp supported_versions map
+    version_documents:
+      '2026-04-08': https://feastables.myshopify.com/.well-known/ucp/2026-04-08
+      '2026-01-23': https://feastables.myshopify.com/.well-known/ucp/2026-01-23
+    spec: https://ucp.dev/2026-04-08/specification/overview/
+  - surface: Storefront MCP (https://feastables.com/api/mcp)
+    scheme: dated protocol version
+    current: '2025-06-18'
+    negotiation: JSON-RPC initialize params.protocolVersion
+    server_version: storefront-renderer 0.1.0
+  - surface: payment handler dev.shopify.card
+    scheme: dated
+    current: '2026-01-15'
+    source: well-known/feastables-ucp.json
+deprecation:
+  policy_url: null
+  sunset_header: false
+  note: >-
+    No deprecation or sunset policy is published by Feastables. Version retirement
+    is implied only by the supported_versions map in /.well-known/ucp - when a
+    dated UCP version leaves that map it is no longer served.
+sla:
+  url: null
+  uptime_target: null
+status_page: null
+status_page_note: >-
+  No Feastables status page was found. The store runs on Shopify, whose platform
+  status page is a third-party surface and is deliberately not recorded as a
+  Feastables property.
+change_log: null
+change_log_note: >-
+  No dated changelog or release notes are published. The agentic-discovery sitemap
+  declares /agents.md at changefreq weekly, which is the only publisher-declared
+  cadence signal on the agent surface.
+deprecated_operations: []
+capability_evolution:
+  note: >-
+    Capability drift is observable through /.well-known/ucp, which enumerates the
+    dev.ucp.shopping.checkout, .cart, .fulfillment and .discount capabilities with
+    their own version and minimum-protocol requirements.
+x-evidence:
+  fetched: '2026-08-01'
+  urls:
+    - https://feastables.com/.well-known/ucp
+    - https://feastables.com/api/mcp
+    - https://feastables.com/sitemap_agentic_discovery.xml

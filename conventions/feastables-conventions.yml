@@ -1,0 +1,117 @@
+generated: '2026-08-01'
+method: searched
+source: https://feastables.com/agents.md
+description: >-
+  Cross-cutting request/response semantics for the Feastables agentic-commerce
+  surface, taken from the store's own /agents.md and /llms.txt, its
+  /.well-known/ucp profile, the UCP shopping schema that profile points at, and
+  live probes of both MCP endpoints. There is no OpenAPI, so nothing here is
+  derived from a spec.
+authentication:
+  style: mixed
+  storefront_mcp: none
+  storefront_json: none
+  ucp_shopping_mcp: UCP-Agent profile URI (meta.ucp-agent.profile)
+  customer_account: OAuth 2.0 / OIDC authorization code with PKCE
+  detail: authentication/feastables-authentication.yml
+idempotency:
+  supported: true
+  surface: https://feastables.com/api/ucp/mcp
+  mechanism: request field
+  field: meta.idempotency-key
+  header: Idempotency-Key
+  format: uuid
+  purpose: retry safety
+  spec: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
+  evidence: >-
+    The UCP Shopping Service schema declared in the store's own /.well-known/ucp
+    defines meta.idempotency-key as "Unique key for retry safety. Maps to HTTP
+    Idempotency-Key header." It is optional on every UCP method and is the retry
+    contract for cart and checkout mutations.
+  not_supported_on:
+    - https://feastables.com/api/mcp
+  note: >-
+    The anonymous Storefront MCP tools (including update_cart) declare no
+    idempotency field. Idempotency covers the UCP checkout lifecycle only.
+pagination:
+  style: cursor
+  surface: https://feastables.com/api/mcp
+  request_field: catalog.pagination.cursor
+  response_field: pagination.cursor
+  evidence: >-
+    search_catalog documents that results are paginated with initial results
+    limited, and instructs callers to use pagination.cursor from the response to
+    fetch additional pages.
+  storefront_json:
+    style: page/limit
+    note: >-
+      Shopify storefront JSON endpoints accept ?limit= and ?page=; Feastables does
+      not document these itself, so no parameter contract is asserted here.
+agent_identity:
+  required_on: https://feastables.com/api/ucp/mcp
+  header: UCP-Agent
+  field: meta.ucp-agent.profile
+  format: uri
+  description: URL to the calling platform's UCP profile document.
+  failure: JSON-RPC -32001 invalid_profile_url at HTTP 422
+buyer_context:
+  fields: [context.address_country, context.currency]
+  purpose: accurate pricing and availability
+  evidence: '/agents.md: "Use buyer context. Pass context.address_country and context.currency"'
+  localization:
+    tools: [get_product_details]
+    fields: [country, language]
+human_approval:
+  required_for: [complete_checkout]
+  rule: >-
+    Checkout requires human approval. Agents must not complete payment without
+    explicit buyer consent; where contemporaneous approval is impossible the store
+    directs agents to route the purchase through Shop Pay via the Shop skill.
+  evidence: 'https://feastables.com/agents.md - "Important Rules"'
+versioning:
+  ucp:
+    scheme: dated
+    current: '2026-04-08'
+    supported: ['2026-04-08', '2026-01-23']
+    negotiation: /.well-known/ucp supported_versions map
+  mcp:
+    scheme: dated protocol version
+    current: '2025-06-18'
+    negotiation: JSON-RPC initialize params.protocolVersion
+  detail: lifecycle/feastables-lifecycle.yml
+error_envelope:
+  format: json-rpc-2.0
+  shape: '{jsonrpc, id, error: {code, message, data}}'
+  http_status_on_error: 422 observed for the UCP agent-profile gate
+  detail: errors/feastables-problem-types.yml
+rate_limits:
+  documented: true
+  quantified: false
+  scope: per IP on the MCP endpoint
+  retry: back off on 429
+  evidence: 'https://feastables.com/agents.md - "Respect rate limits."'
+  note: >-
+    No numeric limit, window, or RateLimit response header is published, so no
+    rate-limits artifact is recorded.
+discovery:
+  entry_points:
+    - {url: 'https://feastables.com/agents.md', role: canonical agent-facing description}
+    - {url: 'https://feastables.com/llms.txt', role: mirror of agents.md}
+    - {url: 'https://feastables.com/.well-known/ucp', role: UCP merchant profile}
+    - {url: 'https://feastables.com/sitemap_agentic_discovery.xml', role: agentic discovery sitemap}
+cross_links:
+  authentication: authentication/feastables-authentication.yml
+  scopes: scopes/feastables-scopes.yml
+  errors: errors/feastables-problem-types.yml
+  lifecycle: lifecycle/feastables-lifecycle.yml
+  mcp: mcp/feastables-mcp.yml
+  conformance: conformance/feastables-conformance.yml
+x-evidence:
+  fetched: '2026-08-01'
+  urls:
+    - https://feastables.com/agents.md
+    - https://feastables.com/llms.txt
+    - https://feastables.com/.well-known/ucp
+    - https://feastables.com/api/mcp
+    - https://feastables.com/api/ucp/mcp
+    - https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json

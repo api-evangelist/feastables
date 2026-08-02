@@ -1,0 +1,160 @@
+generated: '2026-08-01'
+method: searched
+status: published
+source: https://feastables.com/agents.md
+description: >-
+  Feastables runs its direct-to-consumer store on Shopify and exposes two live
+  Model Context Protocol servers on its own feastables.com origin. The Storefront
+  MCP server at /api/mcp answers tools/list anonymously and returns five real tools
+  with full JSON Schema input contracts. The Universal Commerce Protocol (UCP)
+  Shopping MCP server at /api/ucp/mcp is advertised in the store's own
+  /.well-known/ucp profile and in /agents.md, but it is gated: every JSON-RPC call
+  is rejected until the caller presents a UCP agent profile URI.
+servers:
+  - name: feastables-storefront-mcp
+    title: Feastables Storefront MCP
+    transport: http
+    url: https://feastables.com/api/mcp
+    status: published
+    auth: none
+    probe:
+      method: 'POST {"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+      http_status: 200
+      fetched: '2026-08-01'
+      tools_returned: 5
+      file: feastables-storefront-mcp-tools.json
+    server_info:
+      name: storefront-renderer
+      version: 0.1.0
+      protocol_version: '2025-06-18'
+      capabilities:
+        tools:
+          list_changed: true
+        prompts:
+          list_changed: true
+        resources:
+          list_changed: true
+        logging: {}
+      note: >-
+        prompts/list and resources/list both return empty arrays despite the
+        capability being advertised (probed 2026-08-01).
+    tools:
+      - name: search_catalog
+        description: >-
+          Search for products from the online store, hosted on Shopify. Supports
+          natural language queries, filter criteria, or both; at least one of query
+          or filters must be provided. Results are cursor-paginated.
+        input_properties: [meta, catalog]
+      - name: get_product_details
+        description: >-
+          Look up a product by ID. Pass the options parameter to select a specific
+          variant for the product card; without options the first available variant
+          is returned.
+        input_required: [product_id]
+        input_properties: [product_id, options, country, language]
+      - name: get_cart
+        description: >-
+          Get the cart including items, shipping options, discount info, and
+          checkout url for a given cart id.
+        input_required: [cart_id]
+        input_properties: [cart_id]
+      - name: update_cart
+        description: >-
+          Perform updates to a cart, including adding/removing/updating line items,
+          buyer information, shipping details, discount codes, gift cards and notes
+          in one consolidated call. When creating a new cart, only add_items is
+          required.
+        input_properties:
+          - cart_id
+          - add_items
+          - update_items
+          - remove_line_ids
+          - buyer_identity
+          - delivery_addresses_to_add
+          - delivery_addresses_to_replace
+          - selected_delivery_options
+          - discount_codes
+          - gift_card_codes
+          - note
+      - name: search_shop_policies_and_faqs
+        description: >-
+          Get facts about the store's policies, products, or services - return
+          policy, shipping policy, phone number, hours of operation.
+        input_required: [query]
+        input_properties: [query, context]
+  - name: feastables-ucp-shopping-mcp
+    title: Feastables UCP Shopping Service (MCP transport)
+    transport: http
+    url: https://feastables.com/api/ucp/mcp
+    canonical_url: https://feastables.myshopify.com/api/ucp/mcp
+    status: published
+    auth: ucp-agent-profile
+    gated: true
+    discovery:
+      source: https://feastables.com/.well-known/ucp
+      service: dev.ucp.shopping
+      ucp_version: '2026-04-08'
+      supported_versions: ['2026-04-08', '2026-01-23']
+      schema: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
+      spec: https://ucp.dev/2026-04-08/specification/overview/
+    probe:
+      method: 'POST {"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+      http_status: 422
+      fetched: '2026-08-01'
+      error:
+        code: -32001
+        message: UCP discovery failed
+        data_code: invalid_profile_url
+        content: 'Unable to fetch agent profile: Missing profile uri'
+      note: >-
+        tools/list and initialize both return the same gate. The live tool schemas
+        require an authenticated caller presenting a UCP-Agent profile URI; the
+        method surface below is taken from the OpenRPC schema this store's own
+        /.well-known/ucp document points at, not fabricated.
+    methods_from_declared_schema:
+      source: https://ucp.dev/2026-04-08/services/shopping/mcp.openrpc.json
+      openrpc: 1.3.2
+      title: UCP Shopping Service
+      version: '2026-04-08'
+      methods:
+        - {name: search_catalog, summary: Search for products in the catalog, params: [meta, catalog]}
+        - {name: lookup_catalog, summary: Batch lookup products or variants by identifier, params: [meta, catalog]}
+        - {name: get_product, summary: Get product details, params: [meta, catalog]}
+        - {name: create_cart, summary: Create a cart, params: [meta, cart]}
+        - {name: get_cart, summary: Get cart, params: [meta, id]}
+        - {name: update_cart, summary: Update cart, params: [meta, id, cart]}
+        - {name: cancel_cart, summary: Cancel cart, params: [meta, id]}
+        - {name: create_checkout, summary: Create a checkout, params: [meta, checkout]}
+        - {name: get_checkout, summary: Get checkout, params: [meta, id]}
+        - {name: update_checkout, summary: Update checkout, params: [meta, id, checkout]}
+        - {name: complete_checkout, summary: Complete checkout and place order, params: [meta, id, checkout]}
+        - {name: cancel_checkout, summary: Cancel checkout, params: [meta, id]}
+        - {name: get_order, summary: Get order, params: [meta, id]}
+  - name: shopify-customer-account-mcp
+    title: Shopify customer-account MCP (scope only)
+    status: advertised
+    auth: oauth2
+    note: >-
+      The store's OpenID Connect discovery document advertises a
+      customer-account-mcp-api:full scope, implying an authenticated customer-account
+      MCP surface behind the Shopify authentication issuer. No anonymous endpoint was
+      resolvable, so no tool list is recorded.
+    evidence: well-known/feastables-openid-configuration.json
+constraints:
+  human_approval: >-
+    Checkout requires human approval. Per /agents.md, agents must not complete
+    payment without explicit contemporaneous buyer consent.
+  rate_limits: >-
+    The MCP endpoint is rate-limited per IP; /agents.md instructs agents to back off
+    on 429 responses. No numeric limits are published.
+  buyer_context: >-
+    Agents should pass context.address_country and context.currency for accurate
+    pricing and availability.
+x-evidence:
+  fetched: '2026-08-01'
+  urls:
+    - https://feastables.com/agents.md
+    - https://feastables.com/llms.txt
+    - https://feastables.com/.well-known/ucp
+    - https://feastables.com/api/mcp
+    - https://feastables.com/api/ucp/mcp

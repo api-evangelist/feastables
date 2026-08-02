@@ -1,18 +1,94 @@
 aid: feastables
 name: Feastables
-description: 'Feastables is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: >-
+  Feastables is the consumer snack brand founded by Jimmy Donaldson (MrBeast),
+  selling chocolate bars, peanut butter cups, sour gummies, milk and variety boxes
+  direct at feastables.com and across roughly 30,000 retail locations in the US,
+  Canada and Mexico. Its stated mission is to eradicate child labor in the chocolate
+  industry. Feastables ships no developer API and no OpenAPI, but its Shopify-hosted
+  storefront exposes a substantial agentic-commerce surface on its own origin: an
+  /agents.md and mirrored /llms.txt declaring how AI agents should transact, a
+  dedicated agentic-discovery sitemap, a Universal Commerce Protocol merchant
+  profile at /.well-known/ucp, OAuth 2.0 and OpenID Connect discovery documents for
+  customer accounts, an anonymous Storefront MCP server at /api/mcp answering
+  tools/list with five real tools, and a gated UCP Shopping MCP server at
+  /api/ucp/mcp carrying the cart, checkout, fulfillment and discount capabilities.
 url: https://raw.githubusercontent.com/api-evangelist/feastables/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
+x-tier: enriched
+x-tier-reason: enrichment-pipeline
 specificationVersion: '0.20'
 created: '2026-08-01'
 modified: '2026-08-01'
+image: https://feastables.com/cdn/shop/files/Feastables_Logo_2024.png
 tags:
 - Company
-apis: []
+- Consumer Packaged Goods
+- Food and Beverage
+- Chocolate
+- Ecommerce
+- Retail
+- Agentic Commerce
+- Model Context Protocol
+- Universal Commerce Protocol
+- Shopify
+apis:
+- name: Feastables Storefront MCP
+  description: >-
+    Anonymous Model Context Protocol server served from the Feastables origin.
+    Answers initialize and tools/list with no credential (probed 2026-08-01, HTTP
+    200) and returns five tools with full JSON Schema input contracts:
+    search_catalog, get_product_details, get_cart, update_cart and
+    search_shop_policies_and_faqs. Identifies as storefront-renderer 0.1.0 over MCP
+    protocol version 2025-06-18.
+  humanURL: https://feastables.com/agents.md
+  baseURL: https://feastables.com/api/mcp
+  tags:
+  - MCP
+  - Agentic Commerce
+  - Catalog
+  properties:
+  - type: MCPServer
+    url: mcp/feastables-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/feastables-tool-crosswalk.yml
+  - type: AgentSkill
+    url: skills/feastables-shop-catalog.md
+- name: Feastables UCP Shopping Service
+  description: >-
+    Universal Commerce Protocol shopping service over MCP transport, advertised in
+    the store's own /.well-known/ucp profile at UCP version 2026-04-08 (also serving
+    2026-01-23). Carries the full commerce lifecycle - cart, checkout, fulfillment,
+    discount and order - across thirteen methods. Gated: every call requires a
+    UCP-Agent profile URI, and checkout requires explicit buyer approval.
+  humanURL: https://feastables.com/.well-known/ucp
+  baseURL: https://feastables.com/api/ucp/mcp
+  tags:
+  - UCP
+  - MCP
+  - Agentic Commerce
+  - Checkout
+  properties:
+  - type: MCPServer
+    url: mcp/feastables-mcp.yml
+  - type: AgentSkill
+    url: skills/feastables-agentic-checkout.md
+- name: Feastables Storefront JSON
+  description: >-
+    Read-only JSON endpoints the store documents in /agents.md for agents that only
+    need to read store data without transacting - GET /products.json,
+    /products/{handle}.json, /collections/{handle}/products.json and
+    /search?q={query}&type=product. No authentication required.
+  humanURL: https://feastables.com/agents.md
+  baseURL: https://feastables.com
+  tags:
+  - Catalog
+  - Products
+  - Ecommerce
+  properties:
+  - type: DataModel
+    url: data-model/feastables-data-model.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -20,4 +96,51 @@ maintainers:
   email: info@apis.io
 common:
 - type: Website
+  url: https://feastables.com
+- type: Documentation
+  url: https://feastables.com/agents.md
+- type: LLMsTxt
+  url: llms/feastables-llms.txt
+- type: WellKnown
+  url: well-known/feastables-well-known.yml
+- type: MCPServer
+  url: mcp/feastables-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/feastables-tool-crosswalk.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: Authentication
+  url: authentication/feastables-authentication.yml
+- type: OAuthScopes
+  url: scopes/feastables-scopes.yml
+- type: Conformance
+  url: conformance/feastables-conformance.yml
+- type: Conventions
+  url: conventions/feastables-conventions.yml
+- type: Idempotency
+  url: conventions/feastables-conventions.yml
+- type: ErrorCatalog
+  url: errors/feastables-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/feastables-lifecycle.yml
+- type: DataModel
+  url: data-model/feastables-data-model.yml
+- type: DomainSecurity
+  url: security/feastables-domain-security.yml
+- type: Support
+  url: https://feastables.com/pages/contact-us
+- type: HelpCenter
+  url: https://feastables.com/pages/faq
+- type: TermsOfService
+  url: https://feastables.com/policies/terms-of-service
+- type: PrivacyPolicy
+  url: https://feastables.com/policies/privacy-policy
+- type: GitHubOrganization
+  url: https://github.com/Feastables-Inc
+- type: SecondaryMarket
   url: https://forgeglobal.com/feastables_stock/
+x-enrichment:
+  date: '2026-08-01'
+  status: enriched
+  artifacts_added: 21
+  pass: local-v1

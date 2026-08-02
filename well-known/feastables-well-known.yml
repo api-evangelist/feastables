@@ -1,0 +1,82 @@
+generated: '2026-08-01'
+method: probed
+source: https://feastables.com/.well-known/
+description: >-
+  Well-known discovery surface probed on both the Feastables primary storefront host
+  and its underlying myshopify host. The store publishes a Universal Commerce Protocol
+  (UCP) merchant profile plus Shopify customer-account OAuth 2.0 / OpenID Connect
+  discovery documents. It does NOT publish security.txt, an api-catalog, an ai-plugin
+  manifest, or an A2A agent card.
+hosts:
+  - host: https://feastables.com
+    documents:
+      - path: /.well-known/ucp
+        status: 200
+        content_type: application/json
+        file: feastables-ucp.json
+        spec: https://ucp.dev
+        note: UCP merchant profile - versions, services, capabilities, payment handlers
+      - path: /.well-known/openid-configuration
+        status: 200
+        content_type: application/json
+        file: feastables-openid-configuration.json
+        spec: OpenID Connect Discovery 1.0
+      - path: /.well-known/oauth-authorization-server
+        status: 200
+        content_type: application/json
+        file: feastables-oauth-authorization-server.json
+        spec: RFC 8414
+      - path: /.well-known/oauth-protected-resource
+        status: 200
+        content_type: application/json
+        file: feastables-oauth-protected-resource.json
+        spec: RFC 9728
+      - path: /.well-known/security.txt
+        status: 404
+      - path: /.well-known/api-catalog
+        status: 404
+      - path: /.well-known/ai-plugin.json
+        status: 404
+      - path: /.well-known/agent-card.json
+        status: 404
+      - path: /.well-known/agent.json
+        status: 404
+  - host: https://feastables.myshopify.com
+    note: canonical myshopify origin referenced by the UCP profile; identical results
+    documents:
+      - path: /.well-known/ucp
+        status: 200
+      - path: /.well-known/openid-configuration
+        status: 200
+      - path: /.well-known/oauth-authorization-server
+        status: 200
+      - path: /.well-known/oauth-protected-resource
+        status: 200
+      - path: /.well-known/security.txt
+        status: 404
+      - path: /.well-known/agent-card.json
+        status: 404
+      - path: /.well-known/agent.json
+        status: 404
+adjacent_discovery:
+  - path: /llms.txt
+    status: 200
+    content_type: text/markdown
+    file: ../llms/feastables-llms.txt
+  - path: /agents.md
+    status: 200
+    content_type: text/markdown
+    file: ../skills/feastables-agents.md
+    note: provider-declared canonical agent-facing description of the store
+  - path: /sitemap_agentic_discovery.xml
+    status: 200
+    content_type: application/xml
+    note: dedicated agentic-discovery sitemap listing /agents.md
+  - path: /openapi.json
+    status: 404
+x-evidence:
+  fetched: '2026-08-01'
+  method: HTTP GET, follow redirects
+  hosts_probed:
+    - feastables.com
+    - feastables.myshopify.com

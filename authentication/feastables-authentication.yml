@@ -1,0 +1,97 @@
+generated: '2026-08-01'
+method: probed
+source: well-known/feastables-well-known.yml
+docs: https://feastables.com/agents.md
+description: >-
+  Feastables publishes no OpenAPI, so this profile is derived from live probes of
+  the store's own /.well-known/ discovery documents plus its /agents.md agent
+  instructions. Three distinct authentication postures coexist: the Storefront MCP
+  server is anonymous, the UCP Shopping MCP server is gated on a UCP agent profile
+  identity, and customer-account access runs on Shopify-hosted OAuth 2.0 / OpenID
+  Connect.
+summary:
+  types: [none, oauth2, openIdConnect, ucp-agent-profile]
+  api_key_in: []
+  oauth2_flows: [authorizationCode]
+  anonymous_surfaces: 2
+schemes:
+  - name: anonymous-storefront-mcp
+    type: none
+    description: >-
+      The Storefront MCP server accepts JSON-RPC initialize and tools/list with no
+      credential. Probed 2026-08-01, HTTP 200.
+    applies_to: https://feastables.com/api/mcp
+    sources: [mcp/feastables-mcp.yml]
+  - name: anonymous-storefront-json
+    type: none
+    description: >-
+      The read-only storefront JSON endpoints documented in /agents.md
+      (/products.json, /products/{handle}.json, /collections/{handle}/products.json,
+      /search) require no credential.
+    applies_to: https://feastables.com
+    sources: [skills/feastables-agents.md]
+  - name: ucp-agent-profile
+    type: agent-identity
+    description: >-
+      Every UCP Shopping MCP call requires a meta.ucp-agent.profile URI - a URL to
+      the calling platform's UCP profile document, mapped to the HTTP UCP-Agent
+      header. Calls without it are rejected with JSON-RPC -32001 / invalid_profile_url
+      at HTTP 422. This is caller identity, not a bearer credential.
+    applies_to: https://feastables.com/api/ucp/mcp
+    header: UCP-Agent
+    required_field: meta.ucp-agent.profile
+    spec: https://ucp.dev/2026-04-08/specification/overview/
+    sources: [mcp/feastables-mcp.yml]
+  - name: shopify-customer-account-oidc
+    type: openIdConnect
+    openIdConnectUrl: https://feastables.com/.well-known/openid-configuration
+    issuer: https://shopify.com/authentication/55160602784
+    authorizationUrl: https://shopify.com/authentication/55160602784/oauth/authorize
+    tokenUrl: https://shopify.com/authentication/55160602784/oauth/token
+    jwksUrl: https://shopify.com/authentication/55160602784/.well-known/jwks.json
+    endSessionUrl: https://shopify.com/authentication/55160602784/logout
+    response_types_supported: [code]
+    grant_types_supported: [authorization_code]
+    token_endpoint_auth_methods_supported: [client_secret_basic]
+    code_challenge_methods_supported: [S256]
+    id_token_signing_alg_values_supported: [RS256]
+    subject_types_supported: [public]
+    claims_supported: [iss, sub, aud, exp, iat, nonce, sid, email, email_verified]
+    scopes_supported: [openid, email, 'customer-account-api:full', 'customer-account-mcp-api:full']
+    description: >-
+      Customer-account identity is delegated to Shopify's hosted authentication
+      service for this shop id. PKCE (S256) is supported; the only response type is
+      the authorization code.
+    sources: [well-known/feastables-openid-configuration.json]
+  - name: shopify-customer-account-oauth2
+    type: oauth2
+    description: >-
+      RFC 8414 authorization-server metadata mirrors the OIDC document. RFC 9728
+      protected-resource metadata names https://feastables.com as the protected
+      resource, with bearer tokens carried in the Authorization header.
+    resource: https://feastables.com
+    authorization_servers: [https://shopify.com/authentication/55160602784]
+    bearer_methods_supported: [header]
+    flows:
+      - flow: authorizationCode
+        authorizationUrl: https://shopify.com/authentication/55160602784/oauth/authorize
+        tokenUrl: https://shopify.com/authentication/55160602784/oauth/token
+        scopes_count: 4
+    sources:
+      - well-known/feastables-oauth-authorization-server.json
+      - well-known/feastables-oauth-protected-resource.json
+notes:
+  - >-
+    No security.txt and no API key programme were found; Feastables does not run a
+    developer key-issuance surface of its own.
+  - >-
+    /account and /account/login return HTTP 406 to non-browser clients, so the
+    customer sign-up/login page could not be verified and is not recorded.
+x-evidence:
+  fetched: '2026-08-01'
+  urls:
+    - https://feastables.com/.well-known/openid-configuration
+    - https://feastables.com/.well-known/oauth-authorization-server
+    - https://feastables.com/.well-known/oauth-protected-resource
+    - https://feastables.com/api/mcp
+    - https://feastables.com/api/ucp/mcp

@@ -1,0 +1,104 @@
+generated: '2026-08-01'
+method: probed
+source: well-known/feastables-well-known.yml
+description: >-
+  Which cross-cutting standards the Feastables agent/commerce surface actually
+  conforms to, each asserted only from a probed document on a feastables.com host.
+  Feastables is a consumer snack brand, not an API vendor - its machine-readable
+  surface is entirely the agentic-commerce stack its Shopify storefront exposes.
+standards:
+  - id: ucp
+    name: Universal Commerce Protocol
+    version: '2026-04-08'
+    conforms: true
+    evidence: >-
+      /.well-known/ucp returns a UCP merchant profile declaring version 2026-04-08
+      (and 2026-01-23), the dev.ucp.shopping service over MCP and embedded
+      transports, and the checkout / cart / fulfillment / discount capabilities.
+    spec: https://ucp.dev
+  - id: mcp
+    name: Model Context Protocol
+    version: '2025-06-18'
+    conforms: true
+    evidence: >-
+      POST /api/mcp initialize returns protocolVersion 2025-06-18, serverInfo
+      storefront-renderer 0.1.0, and tools/list returns 5 tools with JSON Schema
+      inputSchema. Probed anonymously, HTTP 200.
+  - id: rfc8615-well-known
+    name: Well-Known Uniform Resource Identifiers
+    conforms: true
+    evidence: >-
+      Serves /.well-known/ucp, /.well-known/openid-configuration,
+      /.well-known/oauth-authorization-server and /.well-known/oauth-protected-resource.
+  - id: oidc-discovery
+    name: OpenID Connect Discovery 1.0
+    conforms: true
+    evidence: /.well-known/openid-configuration returns a complete provider metadata document.
+  - id: rfc8414
+    name: OAuth 2.0 Authorization Server Metadata
+    conforms: true
+    evidence: /.well-known/oauth-authorization-server returns authorization-server metadata.
+  - id: rfc9728
+    name: OAuth 2.0 Protected Resource Metadata
+    conforms: true
+    evidence: >-
+      /.well-known/oauth-protected-resource names https://feastables.com as the
+      resource with bearer_methods_supported [header].
+  - id: rfc7636-pkce
+    name: Proof Key for Code Exchange
+    conforms: true
+    evidence: code_challenge_methods_supported includes S256.
+  - id: oauth2-authorization-code
+    name: OAuth 2.0 authorization code grant
+    conforms: true
+    evidence: grant_types_supported includes authorization_code; response_types_supported is [code].
+  - id: llmstxt
+    name: llms.txt
+    conforms: true
+    evidence: >-
+      /llms.txt returns 200 text/markdown with agent instructions; the store also
+      publishes /agents.md as the canonical version and lists it in a dedicated
+      /sitemap_agentic_discovery.xml.
+  - id: idempotency-key
+    name: Idempotency-Key header
+    conforms: true
+    evidence: >-
+      The UCP shopping schema this store's /.well-known/ucp points at defines
+      meta.idempotency-key (uuid) - "Unique key for retry safety. Maps to HTTP
+      Idempotency-Key header." Applies to the UCP surface only.
+    scope: https://feastables.com/api/ucp/mcp
+  - id: sitemaps-org
+    name: Sitemaps 0.9
+    conforms: true
+    evidence: /sitemap.xml returns a sitemapindex including a dedicated agentic-discovery sitemap.
+  - id: a2a
+    name: A2A Agent Card
+    conforms: false
+    evidence: >-
+      /.well-known/agent-card.json and /.well-known/agent.json both return 404 on
+      feastables.com and feastables.myshopify.com.
+  - id: openapi
+    name: OpenAPI
+    conforms: false
+    evidence: /openapi.json, /openapi.yaml, /swagger.json and /api-docs all 404 on both hosts.
+  - id: asyncapi
+    name: AsyncAPI
+    conforms: false
+    evidence: No event, streaming or webhook surface is published to consumers.
+  - id: rfc9457
+    name: Problem Details for HTTP APIs
+    conforms: false
+    evidence: >-
+      Errors are JSON-RPC 2.0 error objects, not application/problem+json. See
+      errors/feastables-problem-types.yml.
+  - id: rfc9116-security-txt
+    name: security.txt
+    conforms: false
+    evidence: /.well-known/security.txt returns 404 on both hosts.
+  - id: rfc8594-sunset
+    name: Sunset HTTP header
+    conforms: false
+    evidence: No deprecation or sunset policy is published.
+x-evidence:
+  fetched: '2026-08-01'
+  hosts: [feastables.com, feastables.myshopify.com]

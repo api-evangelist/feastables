@@ -1,0 +1,33 @@
+generated: '2026-08-01'
+method: searched
+description: >-
+  Agent skills for the Feastables storefront. The first entry is the provider's own
+  agent instructions, saved verbatim; the other two are packaged operating
+  instructions grounded in real, probed tool names - the Storefront MCP tools/list
+  response and the UCP shopping schema the store's /.well-known/ucp declares.
+skills:
+  - file: feastables-agents.md
+    name: Feastables agent instructions (provider-published)
+    method: searched
+    source: https://feastables.com/agents.md
+    http_status: 200
+    content_type: text/markdown
+    fetched: '2026-08-01'
+    note: >-
+      Saved verbatim. The store declares this the canonical agent-facing
+      description and lists it in a dedicated /sitemap_agentic_discovery.xml;
+      /llms.txt mirrors it with one line changed.
+  - file: feastables-shop-catalog.md
+    name: Browse and search the Feastables catalog
+    method: generated
+    api: mcp/feastables-mcp.yml
+    surface: https://feastables.com/api/mcp
+    auth: none
+    operations: [search_catalog, get_product_details, search_shop_policies_and_faqs]
+  - file: feastables-agentic-checkout.md
+    name: Build a cart and complete a Feastables checkout over UCP
+    method: generated
+    api: mcp/feastables-mcp.yml
+    surface: https://feastables.com/api/ucp/mcp
+    auth: ucp-agent-profile
+    operations: [search_catalog, create_cart, update_cart, create_checkout, update_checkout, complete_checkout, get_order]

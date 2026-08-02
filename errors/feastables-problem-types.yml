@@ -1,0 +1,65 @@
+generated: '2026-08-01'
+method: probed
+source: mcp/feastables-mcp.yml
+format: json-rpc-2.0
+description: >-
+  Feastables publishes no error reference and no OpenAPI, so nothing here is
+  derived from a spec. Every entry below was observed live against a feastables.com
+  endpoint on 2026-08-01, or is the transport-level contract the surface commits to
+  (JSON-RPC 2.0 error objects, not RFC 9457 problem+json).
+envelope:
+  content_type: application/json
+  shape: '{"jsonrpc":"2.0","id":<id>,"error":{"code":<int>,"message":<string>,"data":<object>}}'
+  note: >-
+    JSON-RPC error codes are carried in the body; the HTTP status is independent
+    and was observed as 422 for the UCP agent-profile gate.
+problems:
+  - code: -32001
+    http_status: 422
+    message: UCP discovery failed
+    data_code: invalid_profile_url
+    content: 'Unable to fetch agent profile: Missing profile uri'
+    continue_url: https://feastables.myshopify.com/
+    title: UCP agent profile missing or unresolvable
+    remediation: >-
+      Supply meta.ucp-agent.profile (or the UCP-Agent header) with a URL to a
+      resolvable UCP profile document for the calling platform.
+    observed_on: https://feastables.com/api/ucp/mcp
+    observed_methods: [tools/list, initialize]
+    fetched: '2026-08-01'
+  - http_status: 429
+    title: Rate limited
+    remediation: Back off and retry.
+    source: >-
+      Documented in https://feastables.com/agents.md ("The MCP endpoint is
+      rate-limited per IP. Back off on 429 responses."). Not observed during probing.
+    observed: false
+  - http_status: 404
+    title: Not found
+    content_type: text/html
+    remediation: >-
+      Unknown paths return the storefront's HTML 404 page, not a JSON error. Agents
+      probing discovery paths must check content type, not just status.
+    observed_on: /.well-known/security.txt, /.well-known/agent-card.json, /openapi.json
+    fetched: '2026-08-01'
+  - http_status: 406
+    title: Not acceptable
+    remediation: >-
+      Customer-account paths (/account, /account/login) reject non-browser clients.
+      Use the OAuth authorization endpoint in
+      authentication/feastables-authentication.yml instead of scraping.
+    observed_on: /account, /account/login
+    fetched: '2026-08-01'
+not_applicable:
+  rfc9457: >-
+    No application/problem+json responses exist on this surface; error semantics
+    are JSON-RPC 2.0 plus HTTP status.
+  decline_codes: >-
+    Feastables does not operate as a payment processor. Card decline handling sits
+    with the Shopify / Shop Pay payment handlers named in /.well-known/ucp, and no
+    Feastables-published decline-code reference exists.
+x-evidence:
+  fetched: '2026-08-01'
+  urls:
+    - https://feastables.com/api/ucp/mcp
+    - https://feastables.com/agents.md

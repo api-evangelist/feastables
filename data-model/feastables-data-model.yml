@@ -1,0 +1,77 @@
+generated: '2026-08-01'
+method: derived
+source: 'https://feastables.com/products.json (probed 2026-08-01), mcp/feastables-storefront-mcp-tools.json'
+description: >-
+  Entity graph of the Feastables commerce domain, derived from the live public
+  storefront catalog response and the JSON Schema input contracts returned by the
+  Storefront MCP tools/list probe. There is no OpenAPI and no published object
+  reference, so every entity and field below is one that appeared in a real
+  response or a real tool inputSchema - none are inferred from platform docs.
+entities:
+  - name: Product
+    source: 'GET /products.json'
+    identifier: id
+    fields: [id, title, handle, body_html, published_at, created_at, updated_at, vendor, product_type, tags]
+    observed_product_types: ['Chocolate Bars', 'Cups', 'Sour Gummies', 'Milk', 'Variety Box', 'Bundle', 'Limited Time']
+    observed_count: 30
+    note: handle is the URL key used by /products/{handle}.json; the MCP get_product_details tool keys on product_id instead.
+  - name: Variant
+    source: 'GET /products.json (products[].variants[])'
+    identifier: id
+    fields: [id, product_id, title, option1, option2, option3, sku, price, compare_at_price, available, requires_shipping, taxable, grams, position, featured_image, created_at, updated_at]
+  - name: ProductImage
+    source: 'GET /products.json (products[].images[])'
+    identifier: id
+    fields: [id, product_id, variant_ids, src, width, height, position, created_at, updated_at]
+  - name: ProductOption
+    source: 'GET /products.json (products[].options[])'
+    identifier: name
+    fields: [name, position, values]
+  - name: Collection
+    source: 'GET /collections/{handle}/products.json'
+    identifier: handle
+    note: Documented in /agents.md; groups products for browsing.
+  - name: Cart
+    source: 'MCP get_cart / update_cart'
+    identifier: cart_id
+    fields: [cart_id, line_items, buyer_identity, delivery_addresses, selected_delivery_options, discount_codes, gift_card_codes, note, checkout_url]
+    note: Field list taken from the update_cart inputSchema properties and the get_cart description.
+  - name: Checkout
+    source: 'UCP Shopping MCP (create_checkout / get_checkout / update_checkout / complete_checkout / cancel_checkout)'
+    identifier: id
+    gated: true
+    note: Shape is governed by https://ucp.dev/2026-04-08/schemas/shopping/checkout.json, declared in the store's /.well-known/ucp.
+  - name: Order
+    source: 'UCP Shopping MCP (get_order)'
+    identifier: id
+    gated: true
+  - name: Customer
+    source: 'OIDC / Shopify Customer Account'
+    identifier: sub
+    fields: [sub, email, email_verified, sid]
+    note: Claims taken from claims_supported in /.well-known/openid-configuration.
+relationships:
+  - {from: Product, to: Variant, type: has_many, via: 'variants[].product_id'}
+  - {from: Variant, to: Product, type: belongs_to, via: product_id}
+  - {from: Product, to: ProductImage, type: has_many, via: 'images[].product_id'}
+  - {from: ProductImage, to: Variant, type: has_many, via: variant_ids}
+  - {from: Variant, to: ProductImage, type: has_one, via: featured_image}
+  - {from: Product, to: ProductOption, type: has_many, via: 'options[]'}
+  - {from: ProductOption, to: Variant, type: has_many, via: 'option1 / option2 / option3 positional match'}
+  - {from: Collection, to: Product, type: has_many, via: '/collections/{handle}/products.json'}
+  - {from: Cart, to: Variant, type: has_many, via: add_items line items}
+  - {from: Checkout, to: Cart, type: belongs_to, via: 'UCP cart capability (dev.ucp.shopping.cart)'}
+  - {from: Order, to: Checkout, type: belongs_to, via: complete_checkout}
+  - {from: Cart, to: Customer, type: has_one, via: buyer_identity}
+id_conventions:
+  product_id: 64-bit integer, e.g. 15941203263857
+  variant_id: 64-bit integer, e.g. 64295120142705
+  handle: lowercase hyphenated slug, e.g. peanut-butter-cups-share-bag
+  sku: merchant SKU string, e.g. USCP5407
+  shop_id: '55160602784 (appears in the OIDC issuer and the UCP gatewayMerchantId)'
+x-evidence:
+  fetched: '2026-08-01'
+  urls:
+    - https://feastables.com/products.json
+    - https://feastables.com/api/mcp
+    - https://feastables.com/.well-known/openid-configuration
