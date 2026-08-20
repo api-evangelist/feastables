@@ -27,6 +27,17 @@ tags:
 - Consumer Packaged Goods
 - Food and Beverage
 - Chocolate
+- E-Commerce
+- Retail
+- Agentic Commerce
+- MCP
+- Universal Commerce Protocol
+- Shopify
+tags_raw:
+- Company
+- Consumer Packaged Goods
+- Food and Beverage
+- Chocolate
 - Ecommerce
 - Retail
 - Agentic Commerce
@@ -83,6 +94,10 @@ apis:
   humanURL: https://feastables.com/agents.md
   baseURL: https://feastables.com
   tags:
+  - Catalog
+  - Product
+  - E-Commerce
+  tags_raw:
   - Catalog
   - Products
   - Ecommerce
