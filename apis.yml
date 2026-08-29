@@ -14,6 +14,9 @@ description: >-
   tools/list with five real tools, and a gated UCP Shopping MCP server at
   /api/ucp/mcp carrying the cart, checkout, fulfillment and discount capabilities.
 url: https://raw.githubusercontent.com/api-evangelist/feastables/refs/heads/main/apis.yml
+x-api-posture: no-product-api
+x-api-posture-basis: observed
+x-api-posture-note: "Feastables ships no developer API and no OpenAPI, but its Shopify-hosted storefront exposes a substantial agentic-commerce surface on its own origin: an /agents.md and mirrored /llms.txt declaring how"
 x-type: company
 x-source: harvest:secondary-market
 x-tier: enriched
