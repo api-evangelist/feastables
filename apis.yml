@@ -104,6 +104,11 @@ apis:
   humanURL: https://feastables.com/.well-known/ucp
   baseURL: https://feastables.com/api/ucp/mcp
   tags:
+  - Universal Commerce Protocol
+  - MCP
+  - Agentic Commerce
+  - Checkout
+  tags_raw:
   - UCP
   - MCP
   - Agentic Commerce
