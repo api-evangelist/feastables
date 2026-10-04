@@ -94,6 +94,9 @@ apis:
     url: mcp/feastables-tool-crosswalk.yml
   - type: AgentSkill
     url: skills/feastables-shop-catalog.md
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: storefront-mcp
 - name: Feastables UCP Shopping Service
   description: >-
     Universal Commerce Protocol shopping service over MCP transport, advertised in
@@ -118,6 +121,9 @@ apis:
     url: mcp/feastables-mcp.yml
   - type: AgentSkill
     url: skills/feastables-agentic-checkout.md
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: ucp
 - name: Feastables Storefront JSON
   description: >-
     Read-only JSON endpoints the store documents in /agents.md for agents that only
@@ -125,7 +131,6 @@ apis:
     /products/{handle}.json, /collections/{handle}/products.json and
     /search?q={query}&type=product. No authentication required.
   humanURL: https://feastables.com/agents.md
-  baseURL: https://feastables.com
   tags:
   - Catalog
   - Product
@@ -137,6 +142,9 @@ apis:
   properties:
   - type: DataModel
     url: data-model/feastables-data-model.yml
+  x-surface: platform-generated
+  x-platform: shopify
+  x-platform-surface: storefront-json
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
