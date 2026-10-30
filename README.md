@@ -64,26 +64,103 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Feastables is the consumer snack brand founded by Jimmy Donaldson (MrBeast) — chocolate bars,
-peanut butter cups, sour gummies, milk and variety boxes, sold direct at feastables.com and across
-roughly 30,000 retail locations in the US, Canada and Mexico.
+Feastables is the consumer snack brand founded by Jimmy Donaldson (MrBeast), selling chocolate bars, peanut butter cups, sour gummies, milk and variety boxes direct at feastables.com and across roughly 30,000 retail locations in the US, Canada and Mexico. Its stated mission is to eradicate child labor in the chocolate industry. Feastables ships no developer API and no OpenAPI, but its Shopify-hosted storefront exposes a substantial agentic-commerce surface on its own origin: an /agents.md and mirrored /llms.txt declaring how AI agents should transact, a dedicated agentic-discovery sitemap, a Universal Commerce Protocol merchant profile at /.well-known/ucp, OAuth 2.0 and OpenID Connect discovery documents for customer accounts, an anonymous Storefront MCP server at /api/mcp answering tools/list with five real tools, and a gated UCP Shopping MCP server at /api/ucp/mcp carrying the cart, checkout, fulfillment and discount capabilities.
 
-Feastables ships **no developer API and no OpenAPI**. What it does ship — and what this repo
-profiles — is a real agentic-commerce surface on its own origin:
+**Areas:** Company · Consumer Packaged Goods · Food and Beverage · Chocolate · E-Commerce · Retail · Agentic Commerce · MCP · Universal Commerce Protocol · Shopify
 
-| Surface | URL | Status |
-|---|---|---|
-| Agent instructions | https://feastables.com/agents.md | 200, canonical, listed in its own agentic-discovery sitemap |
-| llms.txt | https://feastables.com/llms.txt | 200, mirrors agents.md |
-| UCP merchant profile | https://feastables.com/.well-known/ucp | 200, UCP `2026-04-08` + `2026-01-23` |
-| Storefront MCP | https://feastables.com/api/mcp | 200 anonymous — 5 tools with real inputSchema |
-| UCP Shopping MCP | https://feastables.com/api/ucp/mcp | 422 — gated on a UCP-Agent profile URI |
-| OAuth 2.0 / OIDC discovery | `/.well-known/openid-configuration`, `/oauth-authorization-server`, `/oauth-protected-resource` | 200, Shopify customer accounts |
-| Read-only catalog JSON | `/products.json`, `/products/{handle}.json`, `/collections/{handle}/products.json`, `/search` | 200, anonymous |
+## Feastables on APIs.io
 
-Not present (probed 2026-08-01 on `feastables.com` and `feastables.myshopify.com`): OpenAPI,
-AsyncAPI, A2A agent card, `security.txt`, `api-catalog`, `ai-plugin.json`, first-party SDKs,
-CLI, changelog, status page.
+Everything profiled for Feastables is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/feastables/](https://apis.io/providers/feastables/)** — or go straight to one of the APIs or properties below.
 
-- Website — https://feastables.com
-- Secondary market listing — https://forgeglobal.com/feastables_stock/
+### APIs (3)
+
+- [Feastables Storefront MCP](https://apis.io/apis/feastables/feastables-storefront-mcp/) — Anonymous Model Context Protocol server served from the Feastables origin. Answers initialize and tools/list with no credential (probed 2026-08-01, HTTP…
+- [Feastables UCP Shopping Service](https://apis.io/apis/feastables/feastables-ucp-shopping-service/) — Universal Commerce Protocol shopping service over MCP transport, advertised in the store's own /.well-known/ucp profile at UCP version 2026-04-08 (also…
+- [Feastables Storefront JSON](https://apis.io/apis/feastables/feastables-storefront-json/) — Read-only JSON endpoints the store documents in /agents.md for agents that only need to read store data without transacting - GET /products.json,…
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [feastables-mcp.yml](https://apis.io/servers/feastables/feastables-mcp-yml/)
+
+#### Security (2)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Feastables Authentication](https://apis.io/security/feastables/feastables-authentication/)
+- [Feastables Domain Security](https://apis.io/security/feastables/feastables-domain-security/)
+
+#### OAuth scopes (1)
+
+The permissions the API asks for.
+
+- [Feastables Scopes](https://apis.io/scopes/feastables/feastables-scopes/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://feastables.com)
+- [Documentation](https://feastables.com/agents.md)
+- [Support](https://feastables.com/pages/contact-us)
+- [Terms of service](https://feastables.com/policies/terms-of-service)
+- [Privacy policy](https://feastables.com/policies/privacy-policy)
+- [GitHub](https://github.com/Feastables-Inc)
+
+## API Evangelist rating
+
+**Kin Score 23.5** — emerging · rubric 0.24.0 · scored 2026-10-17
+
+| Facet | Score |
+|---|---|
+| Discoverability | 71.7 |
+| Contract quality | 0.0 |
+| Contract governance | 18.2 |
+| Operational transparency | 2.6 |
+| Developer ergonomics | 33.3 |
+| Access clarity | 21.1 |
+
+**Agent readiness 27.2** — agent-aware
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | — |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | platform (partial credit) |
+| Auth Clarity | served (partial credit) |
+| Idempotency | documented (partial credit) |
+| Error Semantics | documented (partial credit) |
+| OpenAPI Examples | — |
+| Rate Limit Signal | — |
+| Event Surface Described | — |
+| Agent Skills | yes |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | served (partial credit) |
+| Protected Resource Metadata | verified |
+| Dynamic Client Registration | — |
+| Agentic Commerce | platform (partial credit) |
+
+**Regulatory alignment 34.3** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/feastables/](https://apis.io/providers/feastables/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Feastables: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/feastables/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
